@@ -1,9 +1,24 @@
 # Swipe Detection
 
+## Purpose
+
 A simple web app to detect which way the user swiped.  
 This will be used as a foundation to emulate mobile gesture handlers.
 
-## LICENSE
+## Usage
+
+1- Clone this repository  
+2- Install dependencies  
+```bash
+yarn install
+```
+3- Start development server  
+```bash
+yarn dev
+```
+4- You are good to go!
+
+## License
 
 MIT License
 
