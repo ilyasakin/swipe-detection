@@ -1,5 +1,10 @@
 # Swipe Detection
 
+A simple web app to detect which way the user swiped.  
+This will be used as a foundation to emulate mobile gesture handlers.
+
+## LICENSE
+
 MIT License
 
 Copyright (c) 2023 ilyas akın
