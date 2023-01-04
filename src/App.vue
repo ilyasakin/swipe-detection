@@ -1,29 +1,100 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="container">
+    <div>SWIPE DETECTOR 5000</div>
+    <div>{{ anglePresentation }}</div>
+    <div class="direction-info">{{ angleDesc }}</div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
+<script setup lang="ts">
+import { computed, onBeforeMount, ref } from "vue";
+
+const angle = ref<number>(0);
+const isMousePressed = ref<boolean>(false);
+const startX = ref<number | null>(null);
+const startY = ref<number | null>(null);
+
+const angleDesc = computed(() => {
+  if (!isMousePressed.value) {
+    return 'IDLE'
+  }
+
+  if (angle.value >= 45 && angle.value < 135) {
+    return 'UP';
+  }
+
+  if (angle.value >= 135 && angle.value < 225) {
+    return 'RIGHT';
+  }
+
+  if (angle.value >= 225 && angle.value < 315) {
+    return 'DOWN';
+  }
+
+  if (angle.value >= 315 || angle.value < 45) {
+    return 'LEFT';
+  }
+
+  throw new Error(`Unexpected values: angle: ${angle.value}, isMousePressed: ${isMousePressed.value}`);
+});
+
+const anglePresentation = computed((): string => {
+  return new Intl.NumberFormat(['en-US'], { maximumFractionDigits: 2 }).format(angle.value);
+});
+
+const getSwipeAngle = (e: MouseEvent): number | null => {
+  if (!startX.value || !startY.value) {
+    return null;
+  }
+
+  const endX: number = e.screenX + e.movementX;
+  const endY: number = e.screenY + e.movementY;
+
+  const deltaX: number = endX - startX.value;
+  const deltaY: number = endY - startY.value;
+
+  return Math.atan2(deltaY, deltaX) * 180 / Math.PI + 180;
+}
+
+onBeforeMount(() => {
+  document.addEventListener('mousedown', (e) => {
+    isMousePressed.value = true;
+    startX.value = e.screenX;
+    startY.value = e.screenY;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isMousePressed.value) return;
+
+    const _angle: number | null = getSwipeAngle(e);
+
+    if (_angle === 0 || _angle) {
+      angle.value = _angle;
+    }
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    isMousePressed.value = false;
+    // clean-up
+    angle.value = 0;
+    startX.value = null;
+    startY.value = null;
+  });
+});
+</script>
+
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.container div {
+  user-select: none
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+.direction-info {
+  font-weight: 700;
 }
 </style>
