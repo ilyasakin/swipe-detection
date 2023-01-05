@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, ref } from "vue";
+import {computed, onBeforeMount, onBeforeUnmount, ref} from "vue";
 
 const angle = ref<number>(0);
 const isMousePressed = ref<boolean>(false);
@@ -56,30 +56,40 @@ const getSwipeAngle = (e: MouseEvent): number | null => {
   return Math.atan2(deltaY, deltaX) * 180 / Math.PI + 180;
 }
 
+const onMouseDown = (e: MouseEvent) => {
+  isMousePressed.value = true;
+  startX.value = e.screenX;
+  startY.value = e.screenY;
+};
+
+const onMouseMove = (e: MouseEvent) => {
+  if (!isMousePressed.value) return;
+
+  const _angle: number | null = getSwipeAngle(e);
+
+  if (_angle === 0 || _angle) {
+    angle.value = _angle;
+  }
+};
+
+const onMouseUp = () => {
+  isMousePressed.value = false;
+  // clean-up
+  angle.value = 0;
+  startX.value = null;
+  startY.value = null;
+};
+
 onBeforeMount(() => {
-  document.addEventListener('mousedown', (e) => {
-    isMousePressed.value = true;
-    startX.value = e.screenX;
-    startY.value = e.screenY;
-  });
+  document.addEventListener('mousedown', onMouseDown);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+});
 
-  document.addEventListener('mousemove', (e) => {
-    if (!isMousePressed.value) return;
-
-    const _angle: number | null = getSwipeAngle(e);
-
-    if (_angle === 0 || _angle) {
-      angle.value = _angle;
-    }
-  });
-
-  document.addEventListener('mouseup', (e) => {
-    isMousePressed.value = false;
-    // clean-up
-    angle.value = 0;
-    startX.value = null;
-    startY.value = null;
-  });
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', onMouseDown);
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', onMouseUp);
 });
 </script>
 
